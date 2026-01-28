@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Quantum Neural Network - Enhanced</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-highlight: rgba(255, 255, 255, 0.2);
+            --neon-accent: #667eea;
+            --text-main: rgba(255, 255, 255, 0.9);
+            --text-muted: rgba(255, 255, 255, 0.6);
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        body {
+            overflow: hidden;
+            background: #050508;
+            font-family: 'Outfit', sans-serif;
+            color: var(--text-main);
+            transition: background 0.5s ease;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        .glass-panel {
+            backdrop-filter: blur(24px) saturate(120%);
+            -webkit-backdrop-filter: blur(24px) saturate(120%);
+            background: linear-gradient(
+                145deg,
+                rgba(255, 255, 255, 0.05) 0%,
+                rgba(255, 255, 255, 0.01) 100%
+            );
+            border: 1px solid var(--glass-border);
+            border-top: 1px solid var(--glass-highlight);
+            border-left: 1px solid var(--glass-highlight);
+            box-shadow:
+                0 20px 40px rgba(0, 0, 0, 0.4),
+                inset 0 0 20px rgba(255, 255, 255, 0.02);
+            border-radius: 24px;
+            color: var(--text-main);
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: absolute;
+            z-index: 10;
+            overflow: hidden;
+        }
+        .glass-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.05),
+                transparent
+            );
+            transform: skewX(-15deg);
+            transition: 0.5s;
+            pointer-events: none;
+        }
+        .glass-panel:hover {
+            background: linear-gradient(
+                145deg,
+                rgba(255, 255, 255, 0.08) 0%,
+                rgba(255, 255, 255, 0.02) 100%
+            );
+            box-shadow:
+                0 30px 60px rgba(0, 0, 0, 0.5),
+                inset 0 0 20px rgba(255, 255, 255, 0.05);
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+        .glass-panel:hover::before {
+            left: 150%;
+            transition: 0.7s ease-in-out;
+        }
+        #instructions-container {
+            top: 32px;
+            left: 32px;
+            width: 280px;
+            padding: 24px;
+        }
+        #instruction-title {
+            font-weight: 500;
+            font-size: 18px;
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #fff 30%, #a5b4fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        .instruction-text {
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--text-muted);
+            font-weight: 300;
+        }
+        #theme-selector {
+            top: 32px;
+            right: 32px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            width: 260px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        #theme-selector::-webkit-scrollbar {
+            width: 6px;
+        }
+        #theme-selector::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        #theme-selector::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+        #theme-selector-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            justify-items: center;
+        }
+        .theme-button {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow:
+                0 4px 10px rgba(0,0,0,0.3),
+                inset 0 2px 4px rgba(255,255,255,0.4),
+                inset 0 -2px 4px rgba(0,0,0,0.2);
+        }
+        #theme-1 { background: radial-gradient(circle at 30% 30%, #a78bfa, #4c1d95); }
+        #theme-2 { background: radial-gradient(circle at 30% 30%, #fb7185, #9f1239); }
+        #theme-3 { background: radial-gradient(circle at 30% 30%, #38bdf8, #0c4a6e); }
+        #theme-4 { background: radial-gradient(circle at 30% 30%, #34d399, #065f46); }
+        #theme-5 { background: radial-gradient(circle at 30% 30%, #fbbf24, #92400e); }
+        #theme-6 { background: radial-gradient(circle at 30% 30%, #f472b6, #831843); }
+        .theme-button::after {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            right: -4px;
+            bottom: -4px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.8);
+            opacity: 0;
+            transform: scale(1.1);
+            transition: all 0.3s ease;
+        }
+        .theme-button:hover {
+            transform: scale(1.15) translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4), inset 0 2px 6px rgba(255,255,255,0.6);
+        }
+        .theme-button.active::after {
+            opacity: 1;
+            transform: scale(1);
+            border-color: rgba(255,255,255,0.9);
+            box-shadow: 0 0 15px rgba(255,255,255,0.3);
+        }
+        .bg-selector {
+            margin-top: 8px;
+        }
+        .bg-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 8px;
+        }
+        .bg-button {
+            width: 100%;
+            height: 32px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+            font-size: 11px;
+            color: white;
+            font-weight: 500;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+        #bg-1 { background: linear-gradient(135deg, #0a0a0f, #050508); }
+        #bg-2 { background: linear-gradient(135deg, #2a2a5e, #1a1a3e); }
+        #bg-3 { background: linear-gradient(135deg, #0d3a5f, #0a2540); }
+        #bg-4 { background: linear-gradient(135deg, #2a2a2a, #1a1a1a); }
+        #bg-5 { background: linear-gradient(135deg, #3d2b5e, #2d1b4e); }
+        #bg-6 { background: linear-gradient(135deg, #26406a, #16304a); }
+        .bg-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+        .bg-button.active {
+            border: 2px solid rgba(255,255,255,0.5);
+            box-shadow: 0 0 15px rgba(255,255,255,0.2);
+        }
+        #density-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 8px;
+        }
+        .density-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 300;
+        }
+        #density-value {
+            color: white;
+            font-weight: 500;
+            text-shadow: 0 0 10px rgba(255,255,255,0.3);
+        }
+        .density-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            outline: none;
+            transition: background 0.3s ease;
+        }
+        .density-slider:hover {
+            background: rgba(255,255,255,0.15);
+        }
+        .density-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.5);
+            transition: all 0.3s ease;
+        }
+        .density-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.7);
+        }
+        .density-slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.5);
+            transition: all 0.3s ease;
+        }
+        .density-slider::-moz-range-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.7);
+        }
+        #control-buttons {
+            position: absolute;
+            bottom: 32px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            z-index: 10;
+        }
+        .control-btn {
+            backdrop-filter: blur(24px) saturate(120%);
+            -webkit-backdrop-filter: blur(24px) saturate(120%);
+            background: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 16px;
+            padding: 12px 24px;
+            color: white;
+            font-family: 'Outfit', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        }
+        .control-btn:hover {
+            background: linear-gradient(145deg, rgba(255,255,255,0.15), rgba(255,255,255,0.08));
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+        }
+        .control-btn:active {
+            transform: translateY(0);
+        }
+        #fullscreen-btn {
+            background: linear-gradient(145deg, rgba(102,126,234,0.3), rgba(102,126,234,0.1));
+            border: 1px solid rgba(102,126,234,0.5);
+        }
+        #fullscreen-btn:hover {
+            background: linear-gradient(145deg, rgba(102,126,234,0.4), rgba(102,126,234,0.2));
+        }
+        .particle {
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 999;
+            animation: particle-explode 1s ease-out forwards;
+        }
+        @keyframes particle-explode {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--tx), var(--ty)) scale(0);
+                opacity: 0;
+            }
+        }
+        @media (max-width: 768px) {
+            #instructions-container {
+                width: 240px;
+                padding: 16px;
+                top: 16px;
+                left: 16px;
+            }
+            #theme-selector {
+                width: 220px;
+                padding: 16px;
+                top: 16px;
+                right: 16px;
+            }
+            #control-buttons {
+                bottom: 16px;
+                gap: 8px;
+            }
+            .control-btn {
+                padding: 10px 16px;
+                font-size: 12px;
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+
+<div id="instructions-container" class="glass-panel">
+    <div id="instruction-title">✨ Quantum Neural Network</div>
+    <p class="instruction-text">Click anywhere to trigger energy pulses through the network.Drag to rotate the view.</p>
+</div>
+
+<div id="theme-selector" class="glass-panel">
+    <div id="theme-selector-title">Color Themes</div>
+    <div class="theme-grid">
+        <button class="theme-button active" id="theme-1" data-theme="0" title="Purple Nebula"></button>
+        <button class="theme-button" id="theme-2" data-theme="1" title="Red Aurora"></button>
+        <button class="theme-button" id="theme-3" data-theme="2" title="Blue Ocean"></button>
+        <button class="theme-button" id="theme-4" data-theme="3" title="Green Matrix"></button>
+        <button class="theme-button" id="theme-5" data-theme="4" title="Golden Sun"></button>
+        <button class="theme-button" id="theme-6" data-theme="5" title="Pink Cosmos"></button>
+    </div>
+
+    <div class="bg-selector">
+        <div id="theme-selector-title" style="margin-top: 16px;">Background</div>
+        <div class="bg-grid">
+            <button class="bg-button active" id="bg-1" data-bg="0">Dark</button>
+            <button class="bg-button" id="bg-2" data-bg="1">Navy</button>
+            <button class="bg-button" id="bg-3" data-bg="2">Ocean</button>
+            <button class="bg-button" id="bg-4" data-bg="3">Void</button>
+            <button class="bg-button" id="bg-5" data-bg="4">Purple</button>
+            <button class="bg-button" id="bg-6" data-bg="5">Deep</button>
+        </div>
+    </div>
+
+    <div id="density-controls">
+        <div class="density-label">
+            <span>Network Density</span>
+            <span id="density-value">100%</span>
+        </div>
+        <input type="range" min="30" max="150" value="100" class="density-slider" id="density-slider">
+    </div>
+</div>
+
+<div id="control-buttons">
+    <button class="control-btn" id="change-formation-btn">
+        <span>Change Formation</span>
+    </button>
+    <button class="control-btn" id="pause-play-btn">
+        <span>Freeze</span>
+    </button>
+    <button class="control-btn" id="reset-camera-btn">
+        <span>Reset Camera</span>
+    </button>
+    <button class="control-btn" id="fullscreen-btn">
+        <span>⛶ Fullscreen</span>
+    </button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+
+<script>
+    const config = {
+        paused: false,
+        currentFormation: 0,
+        numFormations: 5,
+        densityFactor: 1.0,
+        activePaletteIndex: 0,
+        particlesEnabled: true
+    };
+
+    const backgrounds = [
+        { color: '#050508', name: 'Dark' },
+        { color: '#1a1a3e', name: 'Navy' },
+        { color: '#0a2540', name: 'Ocean' },
+        { color: '#1a1a1a', name: 'Void' },
+        { color: '#2d1b4e', name: 'Purple' },
+        { color: '#16304a', name: 'Deep' }
+    ];
+
+    const colorPalettes = [
+        [
+            new THREE.Color(0xa78bfa),
+            new THREE.Color(0x818cf8),
+            new THREE.Color(0x6366f1),
+            new THREE.Color(0x4f46e5)
+        ],
+        [
+            new THREE.Color(0xfb7185),
+            new THREE.Color(0xf43f5e),
+            new THREE.Color(0xe11d48),
+            new THREE.Color(0xbe123c)
+        ],
+        [
+            new THREE.Color(0x7dd3fc),
+            new THREE.Color(0x38bdf8),
+            new THREE.Color(0x0ea5e9),
+            new THREE.Color(0x0284c7)
+        ],
+        [
+            new THREE.Color(0x6ee7b7),
+            new THREE.Color(0x34d399),
+            new THREE.Color(0x10b981),
+            new THREE.Color(0x059669)
+        ],
+        [
+            new THREE.Color(0xfde047),
+            new THREE.Color(0xfbbf24),
+            new THREE.Color(0xf59e0b),
+            new THREE.Color(0xd97706)
+        ],
+        [
+            new THREE.Color(0xf9a8d4),
+            new THREE.Color(0xf472b6),
+            new THREE.Color(0xec4899),
+            new THREE.Color(0xdb2777)
+        ]
+    ];
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
+    camera.position.set(0, 0, 80);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.2;
+    document.body.appendChild(renderer.domElement);
+
+    const composer = new THREE.EffectComposer(renderer);
+    const renderPass = new THREE.RenderPass(scene, camera);
+    composer.addPass(renderPass);
+
+    const bloomPass = new THREE.UnrealBloomPass(
+        new THREE.Vector2(window.innerWidth, window.innerHeight),
+        1.5,
+        0.6,
+        0.3
+    );
+    composer.addPass(bloomPass);
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 0.5;
+    controls.minDistance = 30;
+    controls.maxDistance = 200;
+    const starGeometry = new THREE.BufferGeometry();
+    const starCount = 2000;
+    const starPositions = [];
+    const starSizes = [];
+    for (let i = 0; i < starCount; i++) {
+        const theta = THREE.MathUtils.randFloatSpread(360);
+        const phi = THREE.MathUtils.randFloatSpread(360);
+        const r = THREE.MathUtils.randFloat(100, 500);
+        starPositions.push(
+            r * Math.sin(theta) * Math.cos(phi),
+            r * Math.sin(theta) * Math.sin(phi),
+            r * Math.cos(theta)
+        );
+        starSizes.push(THREE.MathUtils.randFloat(0.5, 2.0));
+    }
+    starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starPositions, 3));
+    starGeometry.setAttribute('size', new THREE.Float32BufferAttribute(starSizes, 1));
+    const starMaterial = new THREE.ShaderMaterial({
+        uniforms: {
+            uTime: { value: 0 }
+        },
+        vertexShader: `
+            attribute float size;
+            varying float vSize;
+            void main() {
+                vSize = size;
+                vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+                gl_PointSize = size * (300.0 / -mvPosition.z);
+                gl_Position = projectionMatrix * mvPosition;
+            }
+        `,
+        fragmentShader: `
+            uniform float uTime;
+            varying float vSize;
+            void main() {
+                float distanceToCenter = length(gl_PointCoord - vec2(0.5));
+                if (distanceToCenter > 0.5) discard;
+                float alpha = smoothstep(0.5, 0.0, distanceToCenter);
+                float twinkle = sin(uTime * vSize + vSize * 10.0) * 0.3 + 0.7;
+                gl_FragColor = vec4(1.0, 1.0, 1.0, alpha * twinkle * 0.8);
+            }
+        `,
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending
+    });
+
+    const starField = new THREE.Points(starGeometry, starMaterial);
+    scene.add(starField);
+    const nodeShader = {
+        vertexShader: `
+            attribute vec3 nodeColor;
+            attribute float nodeSize;
+            uniform float uTime;
+            uniform vec3 uPulsePositions[3];
+            uniform float uPulseTimes[3];
+            uniform vec3 uPulseColors[3];
+            varying vec3 vColor;
+            varying float vPulseIntensity;
+            void main() {
+                vColor = nodeColor;
+                vec3 pos = position;
+                float totalPulse = 0.0;
+                for (int i = 0; i < 3; i++) {
+                    float timeSincePulse = uTime - uPulseTimes[i];
+                    if (timeSincePulse < 3.0 && timeSincePulse > 0.0) {
+                        float dist = distance(pos, uPulsePositions[i]);
+                        float wave = smoothstep(80.0, 0.0, abs(dist - timeSincePulse * 30.0));
+                        totalPulse += wave;
+                        vColor = mix(vColor, uPulseColors[i], wave * 0.8);
+                    }
+                }
+                vPulseIntensity = clamp(totalPulse, 0.0, 1.0);
+                float breathe = sin(uTime * 0.5 + length(pos) * 0.1) * 0.15 + 0.85;
+                float finalSize = nodeSize * breathe * (1.0 + vPulseIntensity * 1.5);
+                vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+                gl_PointSize = finalSize * (300.0 / -mvPosition.z);
+                gl_Position = projectionMatrix * mvPosition;
+            }
+        `,
+        fragmentShader: `
+            uniform float uTime;
+            varying vec3 vColor;
+            varying float vPulseIntensity;
+            void main() {
+                float distanceToCenter = length(gl_PointCoord - vec2(0.5));
+                if (distanceToCenter > 0.5) discard;
+                float alpha = smoothstep(0.5, 0.0, distanceToCenter);
+                float glow = exp(-distanceToCenter * 3.0);
+                vec3 finalColor = vColor * (1.0 + glow * 0.5 + vPulseIntensity * 2.0);
+                float finalAlpha = alpha * (0.7 + vPulseIntensity * 0.3);
+                gl_FragColor = vec4(finalColor, finalAlpha);
+            }
+        `
+    };
+
+    const connectionShader = {
+        vertexShader: `
+            attribute vec3 startPoint;
+            attribute vec3 endPoint;
+            attribute float connectionStrength;
+            attribute vec3 connectionColor;
+            attribute float pathIndex;
+            uniform float uTime;
+            uniform vec3 uPulsePositions[3];
+            uniform float uPulseTimes[3];
+            uniform vec3 uPulseColors[3];
+            varying vec3 vColor;
+            varying float vAlpha;
+            void main() {
+                float t = position.x;
+                vec3 curvePos = mix(startPoint, endPoint, t);
+                vec3 mid = (startPoint + endPoint) * 0.5;
+                vec3 normal = normalize(cross(endPoint - startPoint, vec3(0.0, 1.0, 0.0)));
+                float arc = sin(t * 3.14159) * 3.0;
+                curvePos += normal * arc;
+                vColor = connectionColor;
+                float flow = fract(uTime * 0.15 + pathIndex * 0.1 + t);
+                vAlpha = connectionStrength * 0.3;
+                float totalPulse = 0.0;
+                for (int i = 0; i < 3; i++) {
+                    float timeSincePulse = uTime - uPulseTimes[i];
+                    if (timeSincePulse < 3.0 && timeSincePulse > 0.0) {
+                        float distToStart = distance(startPoint, uPulsePositions[i]);
+                        float distToEnd = distance(endPoint, uPulsePositions[i]);
+                        float minDist = min(distToStart, distToEnd);
+                        float wave = smoothstep(80.0, 0.0, abs(minDist - timeSincePulse * 30.0));
+                        totalPulse += wave;
+                        vColor = mix(vColor, uPulseColors[i], wave * 0.9);
+                        vAlpha += wave * 0.7;
+                    }
+                }
+                vAlpha += smoothstep(0.95, 1.0, flow) * 0.4;
+                vec4 mvPosition = modelViewMatrix * vec4(curvePos, 1.0);
+                gl_Position = projectionMatrix * mvPosition;
+            }
+        `,
+        fragmentShader: `
+            varying vec3 vColor;
+            varying float vAlpha;
+            void main() {
+                gl_FragColor = vec4(vColor, vAlpha);
+            }
+        `
+    };
+
+    const pulseUniforms = {
+        uTime: { value: 0 },
+        uPulsePositions: { value: [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()] },
+        uPulseTimes: { value: [-999, -999, -999] },
+        uPulseColors: { value: [new THREE.Color(), new THREE.Color(), new THREE.Color()] }
+    };
+
+    class NeuralNetwork {
+        constructor() {
+            this.nodes = [];
+            this.maxConnectionDistance = 25;
+        }
+        addNode(position, level = 0) {
+            const node = {
+                position: position.clone(),
+                connections: [],
+                level: level
+            };
+            this.nodes.push(node);
+            return node;
+        }
+        connectNodes(node1, node2, strength = 1.0) {
+            const distance = node1.position.distanceTo(node2.position);
+            if (distance < this.maxConnectionDistance) {
+                const connection = { node: node2, strength };
+                node1.connections.push(connection);
+            }
+        }
+        autoConnect() {
+            for (let i = 0; i < this.nodes.length; i++) {
+                for (let j = i + 1; j < this.nodes.length; j++) {
+                    const dist = this.nodes[i].position.distanceTo(this.nodes[j].position);
+                    if (dist < this.maxConnectionDistance) {
+                        const strength = THREE.MathUtils.mapLinear(dist, 0, this.maxConnectionDistance, 1.0, 0.3);
+                        this.connectNodes(this.nodes[i], this.nodes[j], strength);
+                        this.connectNodes(this.nodes[j], this.nodes[i], strength);
+                    }
+                }
+            }
+        }
+    }
+
+    let neuralNetwork;
+    let nodesMesh;
+    let connectionsMesh;
+
+    function createNetworkVisualization(formationIndex, densityMod = 1.0) {
+        if (nodesMesh) scene.remove(nodesMesh);
+        if (connectionsMesh) scene.remove(connectionsMesh);
+        neuralNetwork = new NeuralNetwork();
+        const palette = colorPalettes[config.activePaletteIndex];
+        const formations = [
+            () => {
+                const layers = 6;
+                const baseNodesPerLayer = Math.floor(12 * densityMod);
+                for (let layer = 0; layer < layers; layer++) {
+                    const nodesInLayer = baseNodesPerLayer - layer * 1;
+                    const radius = 20 + layer * 8;
+                    const heightOffset = (layer - layers / 2) * 10;
+                    for (let i = 0; i < nodesInLayer; i++) {
+                        const angle = (i / nodesInLayer) * Math.PI * 2;
+                        const x = Math.cos(angle) * radius;
+                        const y = heightOffset;
+                        const z = Math.sin(angle) * radius;
+                        const jitter = 2;
+                        neuralNetwork.addNode(
+                            new THREE.Vector3(
+                                x + THREE.MathUtils.randFloatSpread(jitter),
+                                y + THREE.MathUtils.randFloatSpread(jitter),
+                                z + THREE.MathUtils.randFloatSpread(jitter)
+                            ),
+                            layer
+                        );
+                    }
+                }
+            },
+            () => {
+                const gridSize = Math.floor(8 * Math.sqrt(densityMod));
+                const spacing = 8;
+                for (let x = 0; x < gridSize; x++) {
+                    for (let y = 0; y < gridSize; y++) {
+                        for (let z = 0; z < gridSize; z++) {
+                            if (Math.random() > 0.3) {
+                                const level = Math.floor((x + y + z) / 3) % 4;
+                                neuralNetwork.addNode(
+                                    new THREE.Vector3(
+                                        (x - gridSize / 2) * spacing,
+                                        (y - gridSize / 2) * spacing,
+                                        (z - gridSize / 2) * spacing
+                                    ),
+                                    level
+                                );
+                            }
+                        }
+                    }
+                }
+            },
+            () => {
+                const numNodes = Math.floor(120 * densityMod);
+                const radius = 35;
+                for (let i = 0; i < numNodes; i++) {
+                    const phi = Math.acos(-1 + (2 * i) / numNodes);
+                    const theta = Math.sqrt(numNodes * Math.PI) * phi;
+                    const x = radius * Math.cos(theta) * Math.sin(phi);
+                    const y = radius * Math.sin(theta) * Math.sin(phi);
+                    const z = radius * Math.cos(phi);
+                    const level = Math.floor(Math.random() * 4);
+                    neuralNetwork.addNode(new THREE.Vector3(x, y, z), level);
+                }
+            },
+            () => {
+                const rings = Math.floor(8 * densityMod);
+                const nodesPerRing = Math.floor(16 * densityMod);
+                for (let ring = 0; ring < rings; ring++) {
+                    const radius = 15 + ring * 5;
+                    const height = (ring - rings / 2) * 8;
+                    for (let i = 0; i < nodesPerRing; i++) {
+                        const angle = (i / nodesPerRing) * Math.PI * 2;
+                        neuralNetwork.addNode(
+                            new THREE.Vector3(
+                                Math.cos(angle) * radius,
+                                height,
+                                Math.sin(angle) * radius
+                            ),
+                            ring % 4
+                        );
+                    }
+                }
+            },
+            () => {
+                const numClusters = Math.floor(8 * densityMod);
+                const nodesPerCluster = Math.floor(15 * densityMod);
+                const clusterRadius = 50;
+                for (let c = 0; c < numClusters; c++) {
+                    const clusterCenter = new THREE.Vector3(
+                        THREE.MathUtils.randFloatSpread(clusterRadius),
+                        THREE.MathUtils.randFloatSpread(clusterRadius),
+                        THREE.MathUtils.randFloatSpread(clusterRadius)
+                    );
+                    for (let i = 0; i < nodesPerCluster; i++) {
+                        const offset = new THREE.Vector3(
+                            THREE.MathUtils.randFloatSpread(10),
+                            THREE.MathUtils.randFloatSpread(10),
+                            THREE.MathUtils.randFloatSpread(10)
+                        );
+                        neuralNetwork.addNode(
+                            clusterCenter.clone().add(offset),
+                            c % 4
+                        );
+                    }
+                }
+            }
+        ];
+        formations[formationIndex % formations.length]();
+        neuralNetwork.autoConnect();
+        const nodePositions = [];
+        const nodeColors = [];
+        const nodeSizes = [];
+        neuralNetwork.nodes.forEach(node => {
+            nodePositions.push(node.position.x, node.position.y, node.position.z);
+            const colorIndex = Math.min(node.level, palette.length - 1);
+            const baseColor = palette[colorIndex % palette.length].clone();
+            baseColor.offsetHSL(
+                THREE.MathUtils.randFloatSpread(0.03),
+                THREE.MathUtils.randFloatSpread(0.08),
+                THREE.MathUtils.randFloatSpread(0.08)
+            );
+            nodeColors.push(baseColor.r, baseColor.g, baseColor.b);
+            nodeSizes.push(THREE.MathUtils.randFloat(8, 14));
+        });
+        const nodesGeometry = new THREE.BufferGeometry();
+        nodesGeometry.setAttribute('position', new THREE.Float32BufferAttribute(nodePositions, 3));
+        nodesGeometry.setAttribute('nodeColor', new THREE.Float32BufferAttribute(nodeColors, 3));
+        nodesGeometry.setAttribute('nodeSize', new THREE.Float32BufferAttribute(nodeSizes, 1));
+        const nodesMaterial = new THREE.ShaderMaterial({
+            uniforms: THREE.UniformsUtils.clone(pulseUniforms),
+            vertexShader: nodeShader.vertexShader,
+            fragmentShader: nodeShader.fragmentShader,
+            transparent: true,
+            depthWrite: false,
+            blending: THREE.AdditiveBlending
+        });
+        nodesMesh = new THREE.Points(nodesGeometry, nodesMaterial);
+        scene.add(nodesMesh);
+        const connectionPositions = [];
+        const startPoints = [];
+        const endPoints = [];
+        const connectionColors = [];
+        const pathIndices = [];
+        const connectionStrengths = [];
+        const processedConnections = new Set();
+        let pathIndex = 0;
+        neuralNetwork.nodes.forEach((node, nodeIndex) => {
+            node.connections.forEach(connection => {
+                const connectedNode = connection.node;
+                const connectedIndex = neuralNetwork.nodes.indexOf(connectedNode);
+                if (connectedIndex === -1) return;
+                const key = [Math.min(nodeIndex, connectedIndex), Math.max(nodeIndex, connectedIndex)].join('-');
+                if (!processedConnections.has(key)) {
+                    processedConnections.add(key);
+                    const numSegments = 20;
+                    for (let i = 0; i < numSegments; i++) {
+                        const t = i / (numSegments - 1);
+                        connectionPositions.push(t, 0, 0);
+                        startPoints.push(node.position.x, node.position.y, node.position.z);
+                        endPoints.push(connectedNode.position.x, connectedNode.position.y, connectedNode.position.z);
+                        pathIndices.push(pathIndex);
+                        connectionStrengths.push(connection.strength);
+                        const avgLevel = Math.min(Math.floor((node.level + connectedNode.level) / 2), palette.length - 1);
+                        const baseColor = palette[avgLevel % palette.length].clone();
+                        baseColor.offsetHSL(
+                            THREE.MathUtils.randFloatSpread(0.03),
+                            THREE.MathUtils.randFloatSpread(0.08),
+                            THREE.MathUtils.randFloatSpread(0.08)
+                        );
+                        connectionColors.push(baseColor.r, baseColor.g, baseColor.b);
+                    }
+                    pathIndex++;
+                }
+            });
+       });
+        const connectionsGeometry = new THREE.BufferGeometry();
+        connectionsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(connectionPositions, 3));
+        connectionsGeometry.setAttribute('startPoint', new THREE.Float32BufferAttribute(startPoints, 3));
+        connectionsGeometry.setAttribute('endPoint', new THREE.Float32BufferAttribute(endPoints, 3));
+        connectionsGeometry.setAttribute('connectionStrength', new THREE.Float32BufferAttribute(connectionStrengths, 1));
+        connectionsGeometry.setAttribute('connectionColor', new THREE.Float32BufferAttribute(connectionColors, 3));
+        connectionsGeometry.setAttribute('pathIndex', new THREE.Float32BufferAttribute(pathIndices, 1));
+        const connectionsMaterial = new THREE.ShaderMaterial({
+            uniforms: THREE.UniformsUtils.clone(pulseUniforms),
+            vertexShader: connectionShader.vertexShader,
+            fragmentShader: connectionShader.fragmentShader,
+            transparent: true,
+            depthWrite: false,
+            blending: THREE.AdditiveBlending
+        });
+        connectionsMesh = new THREE.LineSegments(connectionsGeometry, connectionsMaterial);
+        scene.add(connectionsMesh);
+        palette.forEach((color, i) => {
+            if (i < 3) {
+                connectionsMaterial.uniforms.uPulseColors.value[i].copy(color);
+                nodesMaterial.uniforms.uPulseColors.value[i].copy(color);
+            }
+        });
+    }
+
+    function updateTheme(paletteIndex) {
+        config.activePaletteIndex = paletteIndex;
+        if (!nodesMesh || !connectionsMesh || !neuralNetwork) return;
+        const palette = colorPalettes[paletteIndex];
+        const nodeColorsAttr = nodesMesh.geometry.attributes.nodeColor;
+        for (let i = 0; i < nodeColorsAttr.count; i++) {
+            const node = neuralNetwork.nodes[i];
+            if (!node) continue;
+            const colorIndex = Math.min(node.level, palette.length - 1);
+            const baseColor = palette[colorIndex % palette.length].clone();
+            baseColor.offsetHSL(
+                THREE.MathUtils.randFloatSpread(0.03),
+                THREE.MathUtils.randFloatSpread(0.08),
+                THREE.MathUtils.randFloatSpread(0.08)
+            );
+            nodeColorsAttr.setXYZ(i, baseColor.r, baseColor.g, baseColor.b);
+        }
+        nodeColorsAttr.needsUpdate = true;
+        const connectionColors = [];
+        const processedConnections = new Set();
+        neuralNetwork.nodes.forEach((node, nodeIndex) => {
+            node.connections.forEach(connection => {
+                const connectedNode = connection.node;
+                const connectedIndex = neuralNetwork.nodes.indexOf(connectedNode);
+                if (connectedIndex === -1) return;
+                const key = [Math.min(nodeIndex, connectedIndex), Math.max(nodeIndex, connectedIndex)].join('-');
+                if (!processedConnections.has(key)) {
+                    processedConnections.add(key);
+                    const numSegments = 20;
+                    for (let i = 0; i < numSegments; i++) {
+                        const avgLevel = Math.min(Math.floor((node.level + connectedNode.level) / 2), palette.length - 1);
+                        const baseColor = palette[avgLevel % palette.length].clone();
+                        baseColor.offsetHSL(
+                            THREE.MathUtils.randFloatSpread(0.03),
+                            THREE.MathUtils.randFloatSpread(0.08),
+                            THREE.MathUtils.randFloatSpread(0.08)
+                        );
+                        connectionColors.push(baseColor.r, baseColor.g, baseColor.b);
+                    }
+                }
+            });
+        });
+        connectionsMesh.geometry.setAttribute('connectionColor', new THREE.Float32BufferAttribute(connectionColors, 3));
+        connectionsMesh.geometry.attributes.connectionColor.needsUpdate = true;
+        palette.forEach((color, i) => {
+            if (i < 3) {
+                nodesMesh.material.uniforms.uPulseColors.value[i].copy(color);
+                connectionsMesh.material.uniforms.uPulseColors.value[i].copy(color);
+            }
+        });
+    }
+    function createParticles(x, y) {
+        if (!config.particlesEnabled) return;
+        const particleCount = 20;
+        const palette = colorPalettes[config.activePaletteIndex];
+        const color = palette[Math.floor(Math.random() * palette.length)];
+        for (let i = 0; i < particleCount; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = x + 'px';
+            particle.style.top = y + 'px';
+            particle.style.backgroundColor = `rgb(${color.r * 255}, ${color.g * 255}, ${color.b * 255})`;
+            particle.style.boxShadow = `0 0 10px rgb(${color.r * 255}, ${color.g * 255}, ${color.b * 255})`;
+            const angle = (Math.PI * 2 * i) / particleCount;
+            const velocity = THREE.MathUtils.randFloat(50, 150);
+            const tx = Math.cos(angle) * velocity;
+            const ty = Math.sin(angle) * velocity;
+            particle.style.setProperty('--tx', tx + 'px');
+            particle.style.setProperty('--ty', ty + 'px');
+            document.body.appendChild(particle);
+            setTimeout(() => particle.remove(), 1000);
+        }
+    }
+
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+    const interactionPlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
+    const interactionPoint = new THREE.Vector3();
+    let lastPulseIndex = 0;
+
+    function triggerPulse(clientX, clientY) {
+        pointer.x = (clientX / window.innerWidth) * 2 - 1;
+        pointer.y = -(clientY / window.innerHeight) * 2 + 1;
+        raycaster.setFromCamera(pointer, camera);
+        interactionPlane.normal.copy(camera.position).normalize();
+        interactionPlane.constant = -interactionPlane.normal.dot(camera.position) + camera.position.length() * 0.5;
+        if (raycaster.ray.intersectPlane(interactionPlane, interactionPoint)) {
+            const time = clock.getElapsedTime();
+            if (nodesMesh && connectionsMesh) {
+                lastPulseIndex = (lastPulseIndex + 1) % 3;
+                nodesMesh.material.uniforms.uPulsePositions.value[lastPulseIndex].copy(interactionPoint);
+                nodesMesh.material.uniforms.uPulseTimes.value[lastPulseIndex] = time;
+                connectionsMesh.material.uniforms.uPulsePositions.value[lastPulseIndex].copy(interactionPoint);
+                connectionsMesh.material.uniforms.uPulseTimes.value[lastPulseIndex] = time;
+                const palette = colorPalettes[config.activePaletteIndex];
+                const randomColor = palette[Math.floor(Math.random() * palette.length)];
+                nodesMesh.material.uniforms.uPulseColors.value[lastPulseIndex].copy(randomColor);
+                connectionsMesh.material.uniforms.uPulseColors.value[lastPulseIndex].copy(randomColor);
+            }
+            createParticles(clientX, clientY);
+        }
+    }
+
+    renderer.domElement.addEventListener('click', (e) => {
+        if (e.target.closest('.glass-panel, #control-buttons')) return;
+        if (!config.paused) triggerPulse(e.clientX, e.clientY);
+    });
+
+    renderer.domElement.addEventListener('touchstart', (e) => {
+        if (e.target.closest('.glass-panel, #control-buttons')) return;
+        e.preventDefault();
+        if (e.touches.length > 0 && !config.paused) {
+            triggerPulse(e.touches[0].clientX, e.touches[0].clientY);
+        }
+    }, { passive: false });
+
+    const themeButtons = document.querySelectorAll('.theme-button');
+    themeButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const idx = parseInt(btn.dataset.theme, 10);
+            updateTheme(idx);
+            themeButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        });
+    });
+
+    const bgButtons = document.querySelectorAll('.bg-button');
+    bgButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const idx = parseInt(btn.dataset.bg, 10);
+            document.body.style.background = backgrounds[idx].color;
+            bgButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        });
+    });
+
+    const densitySlider = document.getElementById('density-slider');
+    const densityValue = document.getElementById('density-value');
+    let densityTimeout;
+    densitySlider.addEventListener('input', (e) => {
+        e.stopPropagation();
+        const val = parseInt(densitySlider.value, 10);
+        config.densityFactor = val / 100;
+        densityValue.textContent = `${val}%`;
+        clearTimeout(densityTimeout);
+        densityTimeout = setTimeout(() => {
+            createNetworkVisualization(config.currentFormation, config.densityFactor);
+        }, 400);
+    });
+
+    const changeFormationBtn = document.getElementById('change-formation-btn');
+    const pausePlayBtn = document.getElementById('pause-play-btn');
+    const resetCameraBtn = document.getElementById('reset-camera-btn');
+    const fullscreenBtn = document.getElementById('fullscreen-btn');
+
+    changeFormationBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        config.currentFormation = (config.currentFormation + 1) % config.numFormations;
+        createNetworkVisualization(config.currentFormation, config.densityFactor);
+        controls.autoRotate = false;
+        setTimeout(() => { controls.autoRotate = true; }, 2500);
+    });
+
+    pausePlayBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        config.paused = !config.paused;
+        pausePlayBtn.querySelector('span').textContent = config.paused ? 'Play' : 'Freeze';
+        controls.autoRotate = !config.paused;
+    });
+
+    resetCameraBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        controls.reset();
+        controls.autoRotate = false;
+        setTimeout(() => { controls.autoRotate = true; }, 2000);
+    });
+
+    fullscreenBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(err => {
+                console.log('Fullscreen error:', err);
+            });
+            fullscreenBtn.querySelector('span').textContent = '⛶ Exit Fullscreen';
+        } else {
+            document.exitFullscreen();
+            fullscreenBtn.querySelector('span').textContent = '⛶ Fullscreen';
+        }
+    });
+
+    document.addEventListener('fullscreenchange', () => {
+        if (!document.fullscreenElement) {
+            fullscreenBtn.querySelector('span').textContent = '⛶ Fullscreen';
+        }
+    });
+
+    const clock = new THREE.Clock();
+
+    function animate() {
+        requestAnimationFrame(animate);
+        const t = clock.getElapsedTime();
+        if (!config.paused) {
+            if (nodesMesh) {
+                nodesMesh.material.uniforms.uTime.value = t;
+                nodesMesh.rotation.y = Math.sin(t * 0.04) * 0.05;
+            }
+            if (connectionsMesh) {
+                connectionsMesh.material.uniforms.uTime.value = t;
+                connectionsMesh.rotation.y = Math.sin(t * 0.04) * 0.05;
+            }
+        }
+        starField.rotation.y += 0.0002;
+        starField.material.uniforms.uTime.value = t;
+        controls.update();
+        composer.render();
+    }
+
+    function init() {
+        createNetworkVisualization(config.currentFormation, config.densityFactor);
+        document.querySelectorAll('.theme-button').forEach(b => b.classList.remove('active'));
+        document.querySelector(`.theme-button[data-theme="${config.activePaletteIndex}"]`).classList.add('active');
+        animate();
+    }
+
+    function onWindowResize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        composer.setSize(window.innerWidth, window.innerHeight);
+        bloomPass.resolution.set(window.innerWidth, window.innerHeight);
+    }
+    window.addEventListener('resize', onWindowResize);
+    init();
+</script>
+</body>
+</html>
