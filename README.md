@@ -205,8 +205,6 @@ This project is licensed under the MIT License.
 
 If you like this project, please give it a ⭐️ on GitHub!
 
-[![Star History Chart](https://api.star-history.com/svg?repos=your-username/quantum-neural-network&type=Date)](https://star-history.com/#your-username/quantum-neural-network&Date)
-
 ## 🐛 Known Issues
 
 - Fullscreen mode may not work on iOS Safari (browser limitation)
@@ -235,5 +233,6 @@ If you like this project, please give it a ⭐️ on GitHub!
 
 <div align="center">
   <p>Made with ❤️ and ✨</p>
-  <p>© 2025 Your Name. All rights reserved.</p>
+  <p>© 2026 Rafiul Islam, All rights reserved.</p>
 </div>
+
