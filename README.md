@@ -31,7 +31,7 @@ An interactive, real-time 3D neural network visualization with stunning visual e
 
 ## 🚀 Demo
 
-**[Live Demo](https://github.com/rafiul254/Quantum-neural-network)** ← Click to see it in action!
+**[Live Demo](https://your-username.github.io/quantum-neural-network/)** ← Click to see it in action!
 
 ## 🛠️ Technologies Used
 
@@ -186,6 +186,7 @@ Contributions are welcome! Here's how you can help:
 This project is licensed under the MIT License.
 
 ```
+```
 
 ## 🙏 Acknowledgments
 
@@ -199,7 +200,7 @@ This project is licensed under the MIT License.
 - **GitHub**: https://github.com/rafiul254
 - **Email**: rafuulislam2004@gmail.com
 - **Linktree**: https://linktr.ee/rafi.ire6thengineer
-
+  
 ## 🌟 Star History
 
 If you like this project, please give it a ⭐️ on GitHub!
@@ -234,5 +235,5 @@ If you like this project, please give it a ⭐️ on GitHub!
 
 <div align="center">
   <p>Made with ❤️ and ✨</p>
-  <p>© 2026 Rafiul Islam All rights reserved.</p>
+  <p>© 2025 Your Name. All rights reserved.</p>
 </div>
